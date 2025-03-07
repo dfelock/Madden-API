@@ -51,6 +51,9 @@ app.get("/data", async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 });
+app.get("/", (req, res) => {
+    res.send("Madden API is running! Available endpoints: /upload, /data");
+});
 
 // Start Server
 app.listen(PORT, () => {
