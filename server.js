@@ -9,13 +9,13 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors());
+app.use(cors({ origin: "*", methods: ["POST", "GET"], allowedHeaders: ["Content-Type"] }));
 app.use(bodyParser.json());
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log("Connected to MongoDB"))
-    .catch(err => console.error("MongoDB Connection Error:", err));
+    .then(() => console.log("✅ Connected to MongoDB"))
+    .catch(err => console.error("❌ MongoDB Connection Error:", err));
 
 const db = mongoose.connection;
 
@@ -39,13 +39,20 @@ app.get("/", (req, res) => {
 app.post("/upload/*", async (req, res) => {
     try {
         const fullPath = req.path.replace("/upload/", ""); // Capture full dynamic URL
+        console.log(`📥 Received export request: ${fullPath}`);
+
+        if (!req.body || Object.keys(req.body).length === 0) {
+            console.warn("⚠️ Received empty request body!");
+            return res.status(400).json({ message: "Empty request body received." });
+        }
+
         const newEntry = new MaddenData({
             data: req.body,
-            meta: { fullPath }, // Store the full export path
+            meta: { fullPath }, // Store the full export path for debugging
         });
 
         await newEntry.save();
-        console.log(`✅ Data received from Madden export: ${fullPath}`);
+        console.log(`✅ Data successfully saved for: ${fullPath}`);
 
         res.status(200).json({ message: "Data saved successfully!" });
     } catch (error) {
